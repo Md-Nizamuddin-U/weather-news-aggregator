@@ -14,18 +14,21 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { state } = useAppContext();
   const { location, error: locError } = useLocation();
-  const [loading, setLoading] = useState(false);
+
   const [weather, setWeather] = useState<Weather | null>(null);
   const [forecast, setForecast] = useState<ForecastDay[]>([]);
   const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [newsLoading, setNewsLoading] = useState(false);
   const [forcedWeather, setForcedWeather] = useState<'cold' | 'hot' | 'cool' | null>(null);
+
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [newsLoading, setNewsLoading] = useState(false);
 
   const forceWeather = (type: 'cold' | 'hot' | 'cool') => {
     setForcedWeather(type);
   };
 
-
+  // Set header options
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => <Button title="Settings" color="#1E90FF" onPress={() => navigation.navigate('Settings' as any)} />,
@@ -34,14 +37,23 @@ export default function HomeScreen() {
     });
   }, [navigation]);
 
+  // Load weather, forecast, and news
   useEffect(() => {
     const load = async () => {
       if (!location) return;
-      setLoading(true);
-      try {
-        const w = await fetchCurrentWeather(location.lat, location.lon, state.units);
 
-        // Override weather based on forcedWeather
+      setWeatherLoading(true);
+      setForecastLoading(true);
+      setNewsLoading(true);
+
+      try {
+        // Fetch weather + forecast in parallel
+        const [w, f] = await Promise.all([
+          fetchCurrentWeather(location.lat, location.lon, state.units),
+          fetch5DayForecast(location.lat, location.lon, state.units)
+        ]);
+
+        // Apply forced weather for testing
         if (forcedWeather === 'cold') {
           w.temp = 5;
           w.main = 'Snow';
@@ -53,24 +65,21 @@ export default function HomeScreen() {
           w.main = 'Clouds';
         }
 
-        console.log('Weather Used:', w.temp, w.main);
-
         setWeather(w);
-
-        const f = await fetch5DayForecast(location.lat, location.lon, state.units);
         setForecast(f);
+        setWeatherLoading(false);
+        setForecastLoading(false);
 
-        const q = mapWeatherToQuery(w.main, w.temp, state.units);
-        console.log('News Query:', q);
-
-        setNewsLoading(true);
-        const news = await fetchNewsByQuery(q, 20);
+        // Fetch news based on weather and selected categories
+        const query = mapWeatherToQuery(w.main, w.temp, state.units);
+        const news = await fetchNewsByQuery(query, 10); // reduced pageSize for faster load
         setArticles(news);
+        setNewsLoading(false);
 
       } catch (e: any) {
         console.warn(e.message || e);
-      } finally {
-        setLoading(false);
+        setWeatherLoading(false);
+        setForecastLoading(false);
         setNewsLoading(false);
       }
     };
@@ -78,144 +87,72 @@ export default function HomeScreen() {
     load();
   }, [location, state.units, forcedWeather]);
 
-
-
-  // useEffect(() => {
-  //   const load = async () => {
-  //     if (!location) return;
-  //     setLoading(true);
-  //     try {
-  //       const w = await fetchCurrentWeather(location.lat, location.lon, state.units);
-  //       setWeather(w);
-  //       const f = await fetch5DayForecast(location.lat, location.lon, state.units);
-  //       setForecast(f);
-  //       const q = mapWeatherToQuery(w.main, w.temp, state.units);
-  //       setNewsLoading(true);
-  //       const news = await fetchNewsByQuery(q, 20);
-  //       setArticles(news);
-  //     } catch (e: any) {
-  //       console.warn(e.message || e);
-  //     } finally {
-  //       setLoading(false);
-  //       setNewsLoading(false);
-  //     }
-  //   };
-  //   load();
-  // }, [location, state.units]);
-
   if (locError) {
-    return <SafeAreaView style={styles.centered}><Text style={styles.errorText}>Location error: {locError}</Text></SafeAreaView>;
+    return (
+      <SafeAreaView style={styles.centered}>
+        <Text style={styles.errorText}>Location error: {locError}</Text>
+      </SafeAreaView>
+    );
   }
 
-  if (!location || loading) {
-    return <SafeAreaView style={styles.centered}><ActivityIndicator size="large" color="#1E90FF" /></SafeAreaView>;
+  if (!location) {
+    return (
+      <SafeAreaView style={styles.centered}>
+        <ActivityIndicator size="large" color="#1E90FF" />
+      </SafeAreaView>
+    );
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#121212' }}>
-
+      {/* Weather Force Buttons */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 12 }}>
-
-  {/* Cold Button */}
-  <TouchableOpacity
-    style={{
-      backgroundColor: 'transparent',
-      borderWidth: forcedWeather === 'cold' ? 2 : 1,
-      borderColor: forcedWeather === 'cold' ? '#4A90E2' : '#555',
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      borderRadius: 20,
-      alignItems: 'center',
-      flex: 1,
-      marginHorizontal: 3,
-    }}
-    onPress={() => forceWeather('cold')}
-  >
-    <Text
-      style={{
-        color: forcedWeather === 'cold' ? '#4A90E2' : '#aaa',
-        fontWeight: '600',
-        fontSize: 12,
-        textAlign: 'center',
-      }}
-    >
-      ❄️ Cold{"\n"}Depressing News
-    </Text>
-  </TouchableOpacity>
-
-  {/* Hot Button */}
-  <TouchableOpacity
-    style={{
-      backgroundColor: 'transparent',
-      borderWidth: forcedWeather === 'hot' ? 2 : 1,
-      borderColor: forcedWeather === 'hot' ? '#FF5C5C' : '#555',
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      borderRadius: 20,
-      alignItems: 'center',
-      flex: 1,
-      marginHorizontal: 3,
-    }}
-    onPress={() => forceWeather('hot')}
-  >
-    <Text
-      style={{
-        color: forcedWeather === 'hot' ? '#FF5C5C' : '#aaa',
-        fontWeight: '600',
-        fontSize: 12,
-        textAlign: 'center',
-      }}
-    >
-      🔥 Hot{"\n"}Fear News
-    </Text>
-  </TouchableOpacity>
-
-  {/* Cool Button */}
-  <TouchableOpacity
-    style={{
-      backgroundColor: 'transparent',
-      borderWidth: forcedWeather === 'cool' ? 2 : 1,
-      borderColor: forcedWeather === 'cool' ? '#50E3C2' : '#555',
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      borderRadius: 20,
-      alignItems: 'center',
-      flex: 1,
-      marginHorizontal: 3,
-    }}
-    onPress={() => forceWeather('cool')}
-  >
-    <Text
-      style={{
-        color: forcedWeather === 'cool' ? '#50E3C2' : '#aaa',
-        fontWeight: '600',
-        fontSize: 12,
-        textAlign: 'center',
-      }}
-    >
-      🌤️ Cool{"\n"}Happy News
-    </Text>
-  </TouchableOpacity>
-
-</View>
-
-      
+        {['cold', 'hot', 'cool'].map(type => {
+          const isSelected = forcedWeather === type;
+          const colors: any = { cold: '#4A90E2', hot: '#FF5C5C', cool: '#50E3C2' };
+          const emojis: any = { cold: '❄️', hot: '🔥', cool: '🌤️' };
+          const labels: any = { cold: 'Depressing News', hot: 'Fear News', cool: 'Happy News' };
+          return (
+            <TouchableOpacity
+              key={type}
+              style={{
+                backgroundColor: 'transparent',
+                borderWidth: isSelected ? 2 : 1,
+                borderColor: isSelected ? colors[type] : '#555',
+                paddingVertical: 8,
+                paddingHorizontal: 10,
+                borderRadius: 20,
+                alignItems: 'center',
+                flex: 1,
+                marginHorizontal: 3,
+              }}
+              onPress={() => forceWeather(type as any)}
+            >
+              <Text style={{ color: isSelected ? colors[type] : '#aaa', fontWeight: '600', fontSize: 12, textAlign: 'center' }}>
+                {emojis[type]} {type.charAt(0).toUpperCase() + type.slice(1)}{"\n"}{labels[type]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Current Weather */}
-        {weather && <WeatherCard weather={weather} units={state.units} dark />}
+        {weatherLoading ? <ActivityIndicator size="large" color="#1E90FF" /> : weather && <WeatherCard weather={weather} units={state.units} dark />}
 
         {/* 5-Day Forecast */}
         <Text style={styles.sectionTitle}>5-Day Forecast</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {forecast.map(f => (
-            <View key={f.date} style={styles.forecastCard}>
-              <Text style={styles.forecastDate}>{f.date}</Text>
-              <Text style={styles.forecastWeather}>{f.weather}</Text>
-              <Text style={styles.forecastTemp}>{f.tempMin}° - {f.tempMax}°</Text>
-            </View>
-          ))}
-        </ScrollView>
+        {forecastLoading ? <ActivityIndicator size="small" color="#1E90FF" /> : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {forecast.map(f => (
+              <View key={f.date} style={styles.forecastCard}>
+                <Text style={styles.forecastDate}>{f.date}</Text>
+                <Text style={styles.forecastWeather}>{f.weather}</Text>
+                <Text style={styles.forecastTemp}>{f.tempMin}° - {f.tempMax}°</Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Filtered News */}
         <Text style={styles.sectionTitle}>Filtered News</Text>
