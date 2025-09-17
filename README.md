@@ -12,22 +12,22 @@ A React Native app that provides **weather forecasts** and **filtered news** bas
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots (ordered)
 
-### Home Screen
+### Home
 <img width="300" alt="Home" src="https://github.com/user-attachments/assets/eb21db18-9fe7-4ad6-987f-c766d044e292" />
 
-### Weather with News
-<img width="300" alt="Weather News" src="https://github.com/user-attachments/assets/c5ac67ed-383a-42cd-9638-8acec47acfae" />
+### Cold
+<img width="300" alt="Cold" src="https://github.com/user-attachments/assets/c5ac67ed-383a-42cd-9638-8acec47acfae" />
 
-### Cold News
-<img width="300" alt="Cold News" src="https://github.com/user-attachments/assets/5bb62cda-a765-4f6b-a086-b6b745d92c7a" />
+### Hot
+<img width="300" alt="Hot" src="https://github.com/user-attachments/assets/5bb62cda-a765-4f6b-a086-b6b745d92c7a" />
 
-### Hot News
-<img width="300" alt="Hot News" src="https://github.com/user-attachments/assets/fa1d6de6-365a-41ed-9cf9-1e7f99774573" />
+### Cool
+<img width="300" alt="Cool" src="https://github.com/user-attachments/assets/fa1d6de6-365a-41ed-9cf9-1e7f99774573" />
 
-### Cool News
-<img width="300" alt="Cool News" src="https://github.com/user-attachments/assets/f1d6f4c4-b101-4c5e-a26e-f51eb906cd1e" />
+### Settings
+<img width="300" alt="Settings" src="https://github.com/user-attachments/assets/f1d6f4c4-b101-4c5e-a26e-f51eb906cd1e" />
 
 ---
 
