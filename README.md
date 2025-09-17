@@ -14,17 +14,20 @@ A React Native app that provides **weather forecasts** and **filtered news** bas
 
 ## 📸 Screenshots
 
-### Home Screen - Weather & News
-file:///home/user/Mine/WeatherNewsAggregatorApp/screenshots/Screenshot_20250907-124421.WeatherNewsApp.png
+### Home Screen
+<img width="300" alt="Home" src="https://github.com/user-attachments/assets/eb21db18-9fe7-4ad6-987f-c766d044e292" />
+
+### Weather with News
+<img width="300" alt="Weather News" src="https://github.com/user-attachments/assets/c5ac67ed-383a-42cd-9638-8acec47acfae" />
 
 ### Cold News
-<img src="screenshots/Screenshot_20250907-124433.WeatherNewsApp.png" width="300" />
+<img width="300" alt="Cold News" src="https://github.com/user-attachments/assets/5bb62cda-a765-4f6b-a086-b6b745d92c7a" />
 
 ### Hot News
-<img src="screenshots/Screenshot_20250907-124436.WeatherNewsApp.png" width="300" />
+<img width="300" alt="Hot News" src="https://github.com/user-attachments/assets/fa1d6de6-365a-41ed-9cf9-1e7f99774573" />
 
 ### Cool News
-<img src="screenshots/Screenshot_20250907-124451.WeatherNewsApp.png" width="300" />
+<img width="300" alt="Cool News" src="https://github.com/user-attachments/assets/f1d6f4c4-b101-4c5e-a26e-f51eb906cd1e" />
 
 ---
 
